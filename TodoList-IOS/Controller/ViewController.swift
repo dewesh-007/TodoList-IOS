@@ -13,13 +13,13 @@ class TodoListViewController: UITableViewController {
     
     var manageObjectContext: NSManagedObjectContext!
     var itemArray = [Item]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+    //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         manageObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        //loadItems()
+        loadItems()
         
     }
     
@@ -71,20 +71,39 @@ class TodoListViewController: UITableViewController {
         } catch {
             print(error.localizedDescription)
         }
-        
-        self.tableView.reloadData()
+        tableView.reloadData()
     }
     
-    //    func loadItems() {
-    //        if let data = try? Data(contentsOf: dataFilePath!) {
-    //            let decoder = PropertyListDecoder()
-    //            do {
-    //                itemArray = try decoder.decode([Item].self, from: data)
-    //            } catch {
-    //                print(error.localizedDescription)
-    //            }
-    //        }
-    //    }
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+        do {
+            itemArray = try manageObjectContext.fetch(request)
+        } catch {
+            print(error.localizedDescription)
+        }
+        tableView.reloadData()
+    }
     
 }
 
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        loadItems(with: request)
+        
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
+    
+}
