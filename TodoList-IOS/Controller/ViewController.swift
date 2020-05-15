@@ -40,12 +40,19 @@ class ViewController: UITableViewController {
         return cell
     }
     
-//        override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-////            tableView.deselectRow(at: indexPath, animated: true)
-////            itemArray?[indexPath.row].done = !itemArray?[indexPath.row].done
-////
-////            //saveItems()
-//        }
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        if let items = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    items.done = !items.done
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+            tableView.reloadData()
+        }
+    }
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -75,7 +82,7 @@ class ViewController: UITableViewController {
     }
     
     func loadItems() {
-
+        
         todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         tableView.reloadData()
     }

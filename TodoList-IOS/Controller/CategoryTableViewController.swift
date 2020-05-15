@@ -33,8 +33,6 @@ class CategoryTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        //saveData()
         performSegue(withIdentifier: "gotoItems", sender: self)
     }
     
