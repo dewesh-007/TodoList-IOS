@@ -9,13 +9,14 @@
 import UIKit
 import RealmSwift
 
-class ViewController: UITableViewController {
+class ViewController: SwipeTableViewController {
     
     let realm = try! Realm()
     
     var todoItems: Results<Item>?
     var selectedCategory: Category? {
         didSet {
+            tableView.rowHeight = 70
             loadItems()
         }
     }
@@ -30,7 +31,7 @@ class ViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .default, reuseIdentifier: "TodoItemList")
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         if let check = todoItems?[indexPath.row] {
             cell.textLabel?.text = check.title
             cell.accessoryType = check.done ? .checkmark : .none
@@ -87,6 +88,18 @@ class ViewController: UITableViewController {
         
         todoItems = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: true)
         tableView.reloadData()
+    }
+    
+    override func updateModel(at indexPath: IndexPath) {
+        if let cellForDeletion = self.todoItems?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(cellForDeletion)
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
     }
 }
 
